@@ -54,9 +54,9 @@ provider:
 #    - include-me.py
 #    - include-me-dir/**
 
-	
 plugins:
   - serverless-domain-manager
+  - serverless-add-api-key
 custom:
   customDomain:
     domainName: results.billmcmath.co.uk
@@ -75,7 +75,6 @@ functions:
           method: post
           cors: true
           authorizer: aws_iam
-
 
 # functions:
 #   hello:
