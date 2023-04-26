@@ -5,26 +5,39 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: python3.9
-  stage: dev
+  stage:  ${opt:stage, 'dev'}
   region: eu-west-1
   logRetentionInDays: 30
   memorySize: 128
   timeout: 10
-  # apiGateway:
-  #   usagePlan:
-  #     quota:
-  #       limit: 5000
-  #       offset: 2
-  #       period: MONTH
-  #     throttle:
-  #       burstLimit: 200
-  #       rateLimit: 100
+  environment:
+    DYNAMODB_TABLE: expenses
+  iam:
+    role:
+      statements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+        Resource: "arn:aws:dynamodb:eu-west-1:*:table/expenses"
+  apiGateway:
+    usagePlan:
+      quota:
+        limit: 5000
+        offset: 2
+        period: MONTH
+      throttle:
+        burstLimit: 200
+        rateLimit: 100
 
 plugins:
   - serverless-domain-manager
-  - serverless-resource-policy
-
+  - serverless-whitelisting
 custom:
+  wsgi:
+    app: app.app
   customDomain:
     domainName: results.billmcmath.co.uk
     basePath: ''
@@ -32,18 +45,26 @@ custom:
     stage: ${self:provider.stage}	
     endpointType: 'regional'
     createRoute53Record: true
-  serverless-resource-policy:
+  serverless-whitelisting:
     stage: ${self:provider.stage}
     privateStages:
       - dev
     netblocks:
-      - 82.42.77.15/32
+      - 82.42.77.15/32 # home
+      - 4.16.132.251/32 # Work
 
 functions:
-  exampleFunction:
-    handler: handler.handleRequest
+  postFunction:
+    handler: handler.postRequest
     events:
       - http:
           path: '/'
           method: post
+          private: false
+  getFunction:
+    handler: handler.getRequest
+    events:
+      - http:
+          path: '/'
+          method: get
           private: false
