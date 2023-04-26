@@ -5,5 +5,5 @@ deploy:
 	serverless deploy
 
 delete:
-	serverless delete_domain
 	serverless remove
+	serverless delete_domain
