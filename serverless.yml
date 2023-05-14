@@ -11,7 +11,7 @@ provider:
   memorySize: 128
   timeout: 10
   environment:
-    DYNAMODB_TABLE: expenses
+    DYNAMODB_TABLE: trade-results
   iam:
     role:
       statements:
@@ -21,7 +21,8 @@ provider:
           - dynamodb:PutItem
           - dynamodb:UpdateItem
           - dynamodb:DeleteItem
-        Resource: "arn:aws:dynamodb:eu-west-1:*:table/expenses"
+          - dynamodb:Scan
+        Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${env:DYNAMODB_TABLE}"
   apiGateway:
     usagePlan:
       quota:
@@ -68,3 +69,10 @@ functions:
           path: '/'
           method: get
           private: false
+          response:
+            headers:
+              Content-Security-Policy: "'Include default-src 'self''"
+              Strict-Transport-Security: "'max-age=604800; includeSubDomains; preload'"
+              X-Content-Type-Options: "'nosniff'"
+              X-Robots-Tag: "noindex"
+              Cache-Control: "no-cache"
